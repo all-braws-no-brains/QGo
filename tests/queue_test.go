@@ -12,7 +12,8 @@ func TestQueue_Enqueue_Dequeue(t *testing.T) {
 
 	// Test Enqueue
 	event1 := &queue.Event{ID: "1", Payload: []byte("Hello")}
-	q.Enqueue(event1)
+	err := q.Enqueue(event1)
+	assert.Nil(t, err, "Expected no error while enqueuing")
 
 	// Test Dequeue
 	dequeuedEvent, err := q.Dequeue()

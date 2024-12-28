@@ -3,11 +3,16 @@ package queue
 import (
 	"errors"
 	"sync"
+	"time"
 )
 
 type Event struct {
-	ID      string
-	Payload []byte
+	ID         string
+	Payload    interface{}
+	RetryCount int
+	MaxRetries int
+	RetryDelay time.Duration
+	// Timeout    time.Duration
 }
 
 type Queue struct {
