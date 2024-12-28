@@ -56,6 +56,35 @@ func (w *Worker) Start(done chan struct{}, wg *sync.WaitGroup) {
 				time.Sleep(time.Second)
 				continue
 			}
+
+			// Retry Logic
+			for event.RetryCount < event.MaxRetries {
+				if err := w.EventHandler(event); err != nil {
+					event.RetryCount++
+					// Apply delay or back off
+					time.Sleep(event.RetryDelay) // You can replace this with exponential backoff if needed
+					fmt.Printf("Worker %d failed to process event %s (Retry %d/%d)\n", w.ID, event.ID, event.RetryCount, event.MaxRetries)
+					continue
+				}
+				// Successfully processed the event
+				fmt.Printf("Worker %d processed event %s\n", w.ID, event.ID)
+				break
+			}
+
+			if event.RetryCount >= event.MaxRetries {
+				// If max retries reached, log a failure
+				fmt.Printf("Worker %d failed to process event %s after %d retries\n", w.ID, event.ID, event.RetryCount)
+			}
+
+			switch payload := event.Payload.(type) {
+			case []byte:
+				// If the payload is of type []byte, process it accordingly
+				fmt.Printf("Worker %d processing payload: %s\n", w.ID, string(payload))
+			default:
+				// Handle other types or log them as unknown
+				fmt.Printf("Worker %d processing unknown payload type: %T\n", w.ID, payload)
+			}
+
 			if err := w.EventHandler(event); err != nil {
 				fmt.Printf("Worker %d failed to process event %s: %v\n", w.ID, event.ID, err)
 			} else {
