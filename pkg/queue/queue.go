@@ -12,7 +12,8 @@ type Event struct {
 	RetryCount int
 	MaxRetries int
 	RetryDelay time.Duration
-	// Timeout    time.Duration
+	MaxDelay   time.Duration
+	Timeout    time.Duration
 }
 
 type Queue struct {

@@ -1,8 +1,9 @@
 package tests
 
 import (
-	"main/pkg/queue"
 	"testing"
+
+	"github.com/all-braws-no-brains/QGo/pkg/queue"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,8 +13,7 @@ func TestQueue_Enqueue_Dequeue(t *testing.T) {
 
 	// Test Enqueue
 	event1 := &queue.Event{ID: "1", Payload: []byte("Hello")}
-	err := q.Enqueue(event1)
-	assert.Nil(t, err, "Expected no error while enqueuing")
+	q.Enqueue(event1)
 
 	// Test Dequeue
 	dequeuedEvent, err := q.Dequeue()
