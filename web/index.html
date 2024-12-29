@@ -1,0 +1,36 @@
+<!-- web/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Event Status</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Email Event Status</h1>
+  <table id="eventTable">
+    <thead>
+      <tr>
+        <th>Event ID</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // Fetch event statuses from the backend and update the table
+    fetch('/api/events')
+      .then(response => response.json())
+      .then(data => {
+        const tableBody = document.querySelector('#eventTable tbody');
+        Object.entries(data).forEach(([eventID, status]) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${eventID}</td><td>${status}</td>`;
+          tableBody.appendChild(row);
+        });
+      });
+  </script>
+</body>
+</html>

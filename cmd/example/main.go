@@ -3,17 +3,35 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"time"
 
 	"github.com/all-braws-no-brains/QGo/pkg/queue"
 	"github.com/all-braws-no-brains/QGo/pkg/utils"
+	"github.com/all-braws-no-brains/QGo/pkg/webServer"
+	"github.com/gorilla/mux"
 )
+
+type EventStatusResponse struct {
+	StatusList map[string]string `json:"statusList"`
+}
 
 // EmailHandler is an example handler for processing email-related events.
 func EmailHandler(ctx context.Context, event *queue.Event, config *utils.EmailConfig) error {
 	fmt.Printf("Processing email event: %s\n", event.ID)
-	return queue.EmailEventHandler(ctx, event, config)
+	status := "Sent"
+	err := queue.EmailEventHandler(ctx, event, config)
+	if err != nil {
+		status = "Failed"
+	}
+
+	webServer.AddEventStatus(event.ID, status)
+	return err
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	webServer.GetEventStatuses(w, r)
 }
 
 func main() {
@@ -51,6 +69,15 @@ func main() {
 
 	// Start the worker pool
 	workerPool.Start(done)
+
+	// Creating a new HTTP router and defining routes
+	r := mux.NewRouter()
+	r.HandleFunc("/status", statusHandler).Methods("GET")
+
+	// Start the web server in a goroutine
+	go func() {
+		webServer.StartWebServer(r)
+	}()
 
 	// Allow workers to process events for 10 seconds
 	time.Sleep(10 * time.Second)
