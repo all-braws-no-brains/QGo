@@ -1,10 +1,12 @@
 package tests
 
 import (
+	"context"
 	"fmt"
-	"main/pkg/queue"
 	"testing"
 	"time"
+
+	"github.com/all-braws-no-brains/QGo/pkg/queue"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +14,7 @@ import (
 func TestWorkerPool_GracefulShutdown(t *testing.T) {
 	// Create the queue and worker pool
 	q := queue.NewQueue() // q is now properly initialized using the constructor
-	handler := func(event *queue.Event) error {
+	handler := func(ctx context.Context, event *queue.Event) error {
 		// Simulate event processing (sleep for a short duration)
 		time.Sleep(100 * time.Millisecond)
 		return nil
@@ -54,7 +56,7 @@ func TestWorkerPool_Concurrency(t *testing.T) {
 	q := queue.NewQueue()
 
 	// Define an event handler that just prints the event
-	handler := func(event *queue.Event) error {
+	handler := func(ctx context.Context, event *queue.Event) error {
 		fmt.Printf("Processing event: %s\n", event.ID)
 		time.Sleep(100 * time.Millisecond)
 		return nil
@@ -99,7 +101,7 @@ func TestWorkerPool_EventRetry(t *testing.T) {
 	q := queue.NewQueue()
 
 	// Define a handler that simulates failure for the first 2 attempts
-	handler := func(event *queue.Event) error {
+	handler := func(ctx context.Context, event *queue.Event) error {
 		if event.RetryCount < 2 {
 			return fmt.Errorf("temporary failure")
 		}
