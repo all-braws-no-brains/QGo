@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/all-braws-no-brains/QGo/pkg/webServer"
 )
 
 type Worker struct {
@@ -44,16 +46,18 @@ func (w *Worker) Start(done chan struct{}, wg *sync.WaitGroup) {
 					if retryDelay > event.MaxDelay {
 						retryDelay = event.MaxDelay
 					}
-					fmt.Printf("Worker %d failed to process event %s (Retry %d/%d) - Retrying in %v\n", w.ID, event.ID, event.RetryCount, event.MaxRetries, retryDelay)
+					webServer.AddEventStatus(event.ID, fmt.Sprintf("Retrying (%d/%d)", event.RetryCount, event.MaxRetries))
 					continue
 				}
 				// Successfully processed the event
+				webServer.AddEventStatus(event.ID, "Sent")
 				fmt.Printf("Worker %d processed event %s\n", w.ID, event.ID)
 				break
 			}
 
 			if event.RetryCount >= event.MaxRetries {
 				// If max retries reached, log a failure
+				webServer.AddEventStatus(event.ID, "Failed")
 				fmt.Printf("Worker %d failed to process event %s after %d retries\n", w.ID, event.ID, event.RetryCount)
 			}
 		}
